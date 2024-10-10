@@ -1,9 +1,8 @@
 import java.util.Scanner;
 
 class AgendaCitas {
-    private static final String[][] citas = new String[3][2]; // Array para almacenar hasta 10 citas
-    public static String[][] usuarios = new String[3][2];
-
+    private static String[][][] citas = new String[3][10][2]; // 3 doctores, 10 citas cada uno
+    private static String[][] usuarios = new String[3][2];
     private static boolean isAuthenticated = false;
 
     public static void main(String[] args) {
@@ -16,12 +15,14 @@ class AgendaCitas {
             System.out.println("2. Iniciar sesión");
             System.out.println("3. Agendar cita");
             System.out.println("4. Mostrar citas");
-            System.out.println("5. Mostrar doctores");
+            System.out.println("5. Eliminar cita");
+            System.out.println("6. Editar cita");
+            System.out.println("7. Mostrar doctores");
             System.out.println("0. Salir");
             System.out.print("Seleccione una opción: ");
             opcion = Integer.parseInt(scanner.nextLine());
 
-            if (!isAuthenticated) {
+            if (!isAuthenticated && opcion > 2) {
                 System.out.println("Debe iniciar sesión para continuar.");
                 login();
             }
@@ -40,6 +41,12 @@ class AgendaCitas {
                     mostrarCitas();
                     break;
                 case 5:
+                    eliminarCita(scanner);
+                    break;
+                case 6:
+                    editarCita(scanner);
+                    break;
+                case 7:
                     doctores();
                     break;
                 case 0:
@@ -78,6 +85,7 @@ class AgendaCitas {
         for (int i = 0; i < usuarios.length; i++) {
             if (usuarios[i][0] != null && usuarios[i][0].equals(nombre) && usuarios[i][1].equals(contraseña)) {
                 System.out.println("Bienvenido " + nombre);
+                isAuthenticated = true;
                 return;
             }
         }
@@ -85,42 +93,83 @@ class AgendaCitas {
         isAuthenticated = false;
     }
 
-
     private static void agendarCita(Scanner scanner) {
         System.out.print("Ingrese el nombre del paciente: ");
         String nombre = scanner.nextLine();
         System.out.print("Ingrese la fecha de la cita (dd/mm/yyyy): ");
         String fecha = scanner.nextLine();
 
-        for (int i = 0; i < citas.length; i++) {
-            if (citas[i][0] == null) {
-                citas[i][0] = nombre;
-                citas[i][1] = fecha;
-                System.out.println("Cita agendada exitosamente.");
+        System.out.println("Seleccione el doctor:");
+        String[] doctores = {"Dr. Juanito Pérez", "Dra. María Gómez", "Dr. Carlos Sainz"};
+        for (int i = 0; i < doctores.length; i++) {
+            System.out.println((i + 1) + ". " + doctores[i]);
+        }
+        int doctorIndex = Integer.parseInt(scanner.nextLine()) - 1;
+
+        for (int i = 0; i < citas[doctorIndex].length; i++) {
+            if (citas[doctorIndex][i][0] == null) {
+                citas[doctorIndex][i][0] = nombre;
+                citas[doctorIndex][i][1] = fecha;
+                System.out.println("Cita agendada exitosamente con " + doctores[doctorIndex]);
                 return;
             }
         }
 
-        System.out.println("No hay espacio para más citas.");
+        System.out.println("No hay espacio para más citas con " + doctores[doctorIndex]);
     }
 
     private static void mostrarCitas() {
-        System.out.println("Citas agendadas:");
-        for (int i = 0; i < citas.length; i++) {
-            if (citas[i][0] != null) {
-                System.out.println("Paciente: " + citas[i][0] + ", Fecha: " + citas[i][1]);
+        String[] doctores = {"Dr. Juanito Pérez", "Dra. María Gómez", "Dr. Carlos Sainz"};
+        for (int d = 0; d < doctores.length; d++) {
+            System.out.println("Citas con " + doctores[d] + ":");
+            for (int i = 0; i < citas[d].length; i++) {
+                if (citas[d][i][0] != null) {
+                    System.out.println("Paciente: " + citas[d][i][0] + ", Fecha: " + citas[d][i][1]);
+                }
             }
         }
     }
 
+    private static void eliminarCita(Scanner scanner) {
+        System.out.print("Ingrese el nombre del paciente cuya cita desea eliminar: ");
+        String nombre = scanner.nextLine();
+
+        for (int d = 0; d < citas.length; d++) {
+            for (int i = 0; i < citas[d].length; i++) {
+                if (citas[d][i][0] != null && citas[d][i][0].equals(nombre)) {
+                    citas[d][i][0] = null;
+                    citas[d][i][1] = null;
+                    System.out.println("Cita eliminada exitosamente.");
+                    return;
+                }
+            }
+        }
+
+        System.out.println("No se encontró una cita para el paciente especificado.");
+    }
+
+    private static void editarCita(Scanner scanner) {
+        System.out.print("Ingrese el nombre del paciente cuya cita desea editar: ");
+        String nombre = scanner.nextLine();
+
+        for (int d = 0; d < citas.length; d++) {
+            for (int i = 0; i < citas[d].length; i++) {
+                if (citas[d][i][0] != null && citas[d][i][0].equals(nombre)) {
+                    System.out.print("Ingrese la nueva fecha de la cita (dd/mm/yyyy): ");
+                    String nuevaFecha = scanner.nextLine();
+                    citas[d][i][1] = nuevaFecha;
+                    System.out.println("Cita editada exitosamente.");
+                    return;
+                }
+            }
+        }
+
+        System.out.println("No se encontró una cita para el paciente especificado.");
+    }
+
     private static void doctores() {
         System.out.println("Doctores disponibles:");
-
-        String doctores[] = new String[3];
-        doctores[0] = "Dr. Juan Pérez";
-        doctores[1] = "Dra. María Gómez";
-        doctores[2] = "Dr. Carlos Ramírez";
-
+        String[] doctores = {"Dr. Juanito Pérez", "Dra. María Gómez", "Dr. Carlos Sainz"};
         for (int i = 0; i < doctores.length; i++) {
             System.out.println((i + 1) + ". " + doctores[i]);
         }
